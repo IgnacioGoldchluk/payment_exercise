@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, Tuple, Protocol
+from typing import List, Tuple, Protocol
 import datetime
 from dataclasses import dataclass
 from abc import abstractmethod
@@ -7,10 +7,14 @@ from abc import abstractmethod
 
 @dataclass(frozen=True)
 class TimeRange:
+    day: str
     start: datetime.time
     end: datetime.time
 
     def overlapped_hours(self, other_timerange: TimeRange) -> float:
+        if self.day != other_timerange.day:
+            return 0.0
+
         max_start = max(self.start, other_timerange.start)
         min_end = min(self.end, other_timerange.end)
 
@@ -36,11 +40,11 @@ class PayRange:
         return self.usd_per_hour * self.time_range.overlapped_hours(worked_range)
 
 
-WeeklyWorkedHours = Dict[str, List[TimeRange]]
+WeeklyWorkedHours = List[TimeRange]
 
 
 class Payment(Protocol):
-    pay_rate: Dict[str, Tuple[PayRange, ...]]
+    pay_rate: Tuple[PayRange, ...]
 
     @abstractmethod
     def calculate_payment(self, employee_worked_hours: WeeklyWorkedHours) -> float:

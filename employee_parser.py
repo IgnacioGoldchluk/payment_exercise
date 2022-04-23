@@ -1,6 +1,5 @@
-from typing import Dict, List
+from typing import Dict
 import datetime
-from collections import defaultdict
 from payment import WeeklyWorkedHours, TimeRange
 
 
@@ -16,17 +15,11 @@ def parse_from_file(filename: str) -> Dict[str, WeeklyWorkedHours]:
     return employees_weekly_work
 
 
-def parse_to_time_ranges(worked_info: str) -> WeeklyWorkedHours:
-    worked_hours_per_day: Dict[str, List[TimeRange]] = defaultdict(list)
-    per_day = worked_info.split(",")
-
-    for day_info in per_day:
-        # The aliases for the days are always length 2
-        day_alias, schedule = day_info[:2], day_info[2:]
-        worked_hours_per_day[day_alias].append(time_range_string_to_object(schedule))
-    return worked_hours_per_day
+def parse_to_time_ranges(employee_worked_hours: str) -> WeeklyWorkedHours:
+    return [time_range_string_to_object(period) for period in employee_worked_hours.split(",")]
 
 
-def time_range_string_to_object(schedule: str) -> TimeRange:
+def time_range_string_to_object(period: str) -> TimeRange:
+    day_alias, schedule = period[:2], period[2:]
     start, end = [datetime.datetime.strptime(d, "%H:%M").time() for d in schedule.split("-")]
-    return TimeRange(start, end)
+    return TimeRange(day_alias, start, end)
